@@ -184,7 +184,7 @@ For detailed setup instructions, refer to the official documentation:
 ### Available Tools
 
 #### `connect_jmap`
-Connect to your Jmap Mail server.
+Connect to your Jmap Mail server. This is not required for other tools calling.
 
 **Parameters:**
 - `baseUrl`: Base URL of your Jmap server (e.g., `https://mail.example.com`)
@@ -249,7 +249,6 @@ Delete emails (moves to trash).
 
 Once connected to Claude with this MCP server, you can use natural language commands like:
 
-- "Connect to my mail server at https://mail.example.com with username john@example.com"
 - "Show me my recent emails"
 - "Search for emails about 'project update'"
 - "Send an email to alice@example.com about the meeting"
