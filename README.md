@@ -247,7 +247,7 @@ Once connected to Claude with this MCP server, you can use natural language comm
 
 ### Screenshot Demo
 
-Here's an example of the JMAP MCP server working with Claude Desktop:
+Here's an example of the JMAP MCP server working with ChatWise Client:
 
 ![JMAP MCP Server Demo](screenshot.jpg)
 
