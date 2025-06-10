@@ -813,7 +813,7 @@ class JmapMCPServer {
         tools: [
           {
             name: 'connect_jmap',
-            description: 'Connect to Jmap Mail server using JMAP',
+            description: 'Connect to Jmap Mail server using JMAP, Calling this function is completely optional as connection to jmap server actually is automaticly done by default',
             inputSchema: {
               type: 'object',
               properties: {

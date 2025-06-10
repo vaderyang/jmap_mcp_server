@@ -2,6 +2,14 @@
 
 A Model Context Protocol (MCP) server for interacting with Jmap Mail Server via JMAP protocol.
 
+## Demo
+
+Here's an example of the JMAP MCP server working with Claude Desktop:
+
+![JMAP MCP Server Demo](screenshot.jpg)
+
+The screenshot shows the MCP tools successfully retrieving and displaying email data from a JMAP server, demonstrating seamless integration between Claude and your email system.
+
 ## Configuration
 
 ### Environment Variables (Recommended)
@@ -243,15 +251,7 @@ Once connected to Claude with this MCP server, you can use natural language comm
 - "Show me my recent emails"
 - "Search for emails about 'project update'"
 - "Send an email to alice@example.com about the meeting"
-- "Mark all unread emails as read"
-
-### Screenshot Demo
-
-Here's an example of the JMAP MCP server working with ChatWise Client:
-
-![JMAP MCP Server Demo](screenshot.jpg)
-
-The screenshot shows the MCP tools successfully retrieving and displaying email data from a JMAP server, demonstrating seamless integration between Claude and your email system.
+|- "Mark all unread emails as read"
 
 ## JMAP Protocol
 
