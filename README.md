@@ -4,11 +4,13 @@ A Model Context Protocol (MCP) server for interacting with Jmap Mail Server via 
 
 ## Demo
 
-Here's an example of the JMAP MCP server working with Claude Desktop:
+Here's the JMAP MCP server working with Claude Desktop:
 
-![JMAP MCP Server Demo](screenshot.jpg)
+![JMAP MCP Server - Email Retrieval](claude_desktop_screenshot1.jpg)
 
-The screenshot shows the MCP tools successfully retrieving and displaying email data from a JMAP server, demonstrating seamless integration between Claude and your email system.
+![JMAP MCP Server - Email Search](claude_desktop_screenshot2.jpg)
+
+The screenshots show the MCP tools successfully retrieving and searching email data from a JMAP server, demonstrating seamless integration between Claude Desktop and your email system.
 
 ## Configuration
 
