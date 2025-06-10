@@ -2,7 +2,7 @@
   "mcpServers": {
     "email": {
       "command": "node",
-      "args": ["dist/index.js"],
+      "args": ["<absolute_path_to>dist/index.js"],
       "description": "Jmap Mail Server integration via JMAP protocol",
       "env": {
         "JMAP_BASE_URL": "https://your-mail-server.com",
