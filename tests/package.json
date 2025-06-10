@@ -1,0 +1,11 @@
+{
+  "type": "module",
+  "name": "jmap-mcp-tests",
+  "version": "1.0.0",
+  "description": "Test suite for JMAP MCP Server",
+  "scripts": {
+    "test": "node test-all-features.js",
+    "quick-test": "node quick-test.js"
+  }
+}
+

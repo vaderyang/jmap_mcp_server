@@ -1,0 +1,43 @@
+{
+  "name": "jmap-mail-mcp-server",
+  "version": "0.1.0",
+  "description": "MCP server for Jmap Mail via JMAP",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node --esm src/index.ts",
+    "prepare": "npm run build",
+    "test": "./run-tests.sh",
+    "test:simple": "./test-simple.sh",
+    "test:quick": "node tests/quick-test.js",
+    "test:email": "node test-email-live.js",
+    "test:reply": "node test-reply.js"
+  },
+  "keywords": [
+    "mcp",
+    "jmap",
+    "mail",
+    "jmap",
+    "email"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^0.4.0",
+    "node-fetch": "^3.3.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0",
+    "ts-node": "^10.9.0"
+  },
+  "bin": {
+    "jmap-mcp-server": "./dist/index.js"
+  },
+  "files": [
+    "dist/**/*",
+    "README.md"
+  ]
+}
