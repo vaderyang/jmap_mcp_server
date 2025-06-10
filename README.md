@@ -6,20 +6,14 @@ A Model Context Protocol (MCP) server for interacting with Jmap Mail Server via 
 
 ### Environment Variables (Recommended)
 
-The server can be configured using the following environment variables:
+The server can be configured using environment variables passed through MCP client configuration:
 
 - `JMAP_BASE_URL` - Base URL of your Jmap Mail server (e.g., `https://mail.example.com`)
 - `JMAP_USERNAME` - Username/email for authentication
 - `JMAP_PASSWORD` - Password for authentication
 - `JMAP_ACCOUNT_ID` - (Optional) Specific account ID to use
 
-#### Example:
-```bash
-export JMAP_BASE_URL="https://mail.example.com"
-export JMAP_USERNAME="user@example.com"
-export JMAP_PASSWORD="your-password"
-export JMAP_ACCOUNT_ID="account123"  # Optional
-```
+These should be configured in your MCP client's configuration file (see examples below).
 
 ### Config File (Fallback)
 
@@ -107,7 +101,51 @@ Add to your Claude Desktop configuration (`~/Library/Application Support/Claude/
     "jmap-mail": {
       "command": "node",
       "args": ["/path/to/jmap-mcp-server/dist/index.js"],
-      "env": {}
+      "env": {
+        "JMAP_BASE_URL": "https://mail.example.com",
+        "JMAP_USERNAME": "user@example.com",
+        "JMAP_PASSWORD": "your-password",
+        "JMAP_ACCOUNT_ID": "account123"
+      }
+    }
+  }
+}
+```
+
+### Alternative: Using Config File
+
+If you prefer not to put credentials in the Claude Desktop config, you can omit the `env` section and use a config file instead:
+
+```json
+{
+  "mcpServers": {
+    "jmap-mail": {
+      "command": "node",
+      "args": ["/path/to/jmap-mcp-server/dist/index.js"],
+      "env": {
+        "JMAP_CONFIG_PATH": "/path/to/your/jmap-config.json"
+      }
+    }
+  }
+}
+```
+
+### Configuration with Cursor
+
+For Cursor, add the MCP server configuration to your workspace or global settings:
+
+```json
+{
+  "@mcp": {
+    "jmap-mail": {
+      "command": "node",
+      "args": ["/path/to/jmap-mcp-server/dist/index.js"],
+      "env": {
+        "JMAP_BASE_URL": "https://mail.example.com",
+        "JMAP_USERNAME": "user@example.com",
+        "JMAP_PASSWORD": "your-password",
+        "JMAP_ACCOUNT_ID": "account123"
+      }
     }
   }
 }
