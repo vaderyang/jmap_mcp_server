@@ -66,24 +66,18 @@ If no configuration is provided or connection fails, you can use the `connect_jm
 
 ### Setup
 
-1. **Clone or create the project directory:**
+1. **Clone the repository:**
 ```bash
-mkdir jmap-mcp-server
-cd jmap-mcp-server
+git clone https://github.com/vaderyang/jmap_mcp_server.git
+cd jmap_mcp_server
 ```
 
-2. **Create the source directory and move the TypeScript file:**
-```bash
-mkdir src
-# Move the main TypeScript code to src/index.ts
-```
-
-3. **Install dependencies:**
+2. **Install dependencies:**
 ```bash
 npm install
 ```
 
-4. **Build the project:**
+3. **Build the project:**
 ```bash
 npm run build
 ```
@@ -118,6 +112,26 @@ Add to your Claude Desktop configuration (`~/Library/Application Support/Claude/
   }
 }
 ```
+
+## MCP Configuration Reference
+
+For detailed setup instructions, refer to the official documentation:
+
+### Claude Desktop
+- **Official Documentation**: [Claude Desktop MCP Guide](https://modelcontextprotocol.io/docs/tools/claude-desktop)
+- **Configuration Location**: 
+  - macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
+  - Windows: `%APPDATA%\Claude\claude_desktop_config.json`
+  - Linux: `~/.config/Claude/claude_desktop_config.json`
+
+### Cursor
+- **Official Documentation**: [Cursor MCP Setup](https://docs.cursor.com/context/@mcp)
+- **Configuration**: Add MCP servers through Cursor's settings or configuration files
+
+### General MCP Resources
+- **MCP Official Website**: [modelcontextprotocol.io](https://modelcontextprotocol.io/)
+- **MCP GitHub Repository**: [github.com/modelcontextprotocol](https://github.com/modelcontextprotocol)
+- **Sample MCP Servers**: [github.com/modelcontextprotocol/servers](https://github.com/modelcontextprotocol/servers)
 
 ### Available Tools
 
