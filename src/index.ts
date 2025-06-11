@@ -180,6 +180,8 @@ class JmapJMAPClient {
         using: [
           'urn:ietf:params:jmap:core',
           'urn:ietf:params:jmap:mail',
+          'urn:ietf:params:jmap:calendars',
+          'urn:ietf:params:jmap:contacts',
         ],
         methodCalls,
       }),
@@ -711,6 +713,272 @@ class JmapJMAPClient {
 
     return response.methodResponses[0][1];
   }
+
+  // Calendar methods
+  async getCalendars(): Promise<any> {
+    const response = await this.jmapRequest([
+      ['Calendar/get', {
+        accountId: this.session!.accountId,
+      }, 'a']
+    ]);
+
+    return response.methodResponses[0][1];
+  }
+
+  async getCalendarEvents(calendarId?: string, limit: number = 50): Promise<any> {
+    const filter: any = {};
+    if (calendarId) {
+      filter.inCalendar = calendarId;
+    }
+
+    const response = await this.jmapRequest([
+      ['CalendarEvent/query', {
+        accountId: this.session!.accountId,
+        filter,
+        limit,
+        sort: [{ property: 'start', isAscending: false }],
+      }, 'a'],
+      ['CalendarEvent/get', {
+        accountId: this.session!.accountId,
+        '#ids': {
+          resultOf: 'a',
+          name: 'CalendarEvent/query',
+          path: '/ids',
+        },
+        properties: ['id', 'title', 'description', 'start', 'end', 'calendarId', 'location', 'participants', 'status', 'showWithoutTime'],
+      }, 'b']
+    ]);
+
+    return {
+      queryResult: response.methodResponses[0][1],
+      eventsResult: response.methodResponses[1][1]
+    };
+  }
+
+  async createCalendarEvent(eventData: {
+    calendarId: string;
+    title: string;
+    description?: string;
+    start: string;
+    end: string;
+    location?: string;
+    participants?: string[];
+    showWithoutTime?: boolean;
+  }): Promise<any> {
+    const event = {
+      calendarId: eventData.calendarId,
+      title: eventData.title,
+      description: eventData.description || '',
+      start: eventData.start,
+      end: eventData.end,
+      location: eventData.location || '',
+      showWithoutTime: eventData.showWithoutTime || false,
+      participants: eventData.participants ? eventData.participants.map(email => ({
+        email,
+        role: 'attendee',
+        participationStatus: 'needs-action',
+      })) : [],
+    };
+
+    const response = await this.jmapRequest([
+      ['CalendarEvent/set', {
+        accountId: this.session!.accountId,
+        create: {
+          tempId: event,
+        },
+      }, 'a']
+    ]);
+
+    return response.methodResponses[0][1];
+  }
+
+  async updateCalendarEvent(eventId: string, updates: {
+    title?: string;
+    description?: string;
+    start?: string;
+    end?: string;
+    location?: string;
+    participants?: string[];
+  }): Promise<any> {
+    const updateData: any = {};
+    if (updates.title !== undefined) updateData.title = updates.title;
+    if (updates.description !== undefined) updateData.description = updates.description;
+    if (updates.start !== undefined) updateData.start = updates.start;
+    if (updates.end !== undefined) updateData.end = updates.end;
+    if (updates.location !== undefined) updateData.location = updates.location;
+    if (updates.participants !== undefined) {
+      updateData.participants = updates.participants.map(email => ({
+        email,
+        role: 'attendee',
+        participationStatus: 'needs-action',
+      }));
+    }
+
+    const response = await this.jmapRequest([
+      ['CalendarEvent/set', {
+        accountId: this.session!.accountId,
+        update: {
+          [eventId]: updateData,
+        },
+      }, 'a']
+    ]);
+
+    return response.methodResponses[0][1];
+  }
+
+  async deleteCalendarEvent(eventId: string): Promise<any> {
+    const response = await this.jmapRequest([
+      ['CalendarEvent/set', {
+        accountId: this.session!.accountId,
+        destroy: [eventId],
+      }, 'a']
+    ]);
+
+    return response.methodResponses[0][1];
+  }
+
+  // Contact methods
+  async getAddressBooks(): Promise<any> {
+    const response = await this.jmapRequest([
+      ['AddressBook/get', {
+        accountId: this.session!.accountId,
+      }, 'a']
+    ]);
+
+    return response.methodResponses[0][1];
+  }
+
+  async getContacts(addressBookId?: string, limit: number = 50): Promise<any> {
+    const filter: any = {};
+    if (addressBookId) {
+      filter.inAddressBook = addressBookId;
+    }
+
+    const response = await this.jmapRequest([
+      ['Contact/query', {
+        accountId: this.session!.accountId,
+        filter,
+        limit,
+        sort: [{ property: 'lastName', isAscending: true }],
+      }, 'a'],
+      ['Contact/get', {
+        accountId: this.session!.accountId,
+        '#ids': {
+          resultOf: 'a',
+          name: 'Contact/query',
+          path: '/ids',
+        },
+        properties: ['id', 'firstName', 'lastName', 'emails', 'phones', 'addresses', 'company', 'jobTitle', 'notes', 'addressBookId'],
+      }, 'b']
+    ]);
+
+    return {
+      queryResult: response.methodResponses[0][1],
+      contactsResult: response.methodResponses[1][1]
+    };
+  }
+
+  async searchContacts(query: string, limit: number = 20): Promise<any> {
+    const response = await this.jmapRequest([
+      ['Contact/query', {
+        accountId: this.session!.accountId,
+        filter: {
+          text: query,
+        },
+        limit,
+        sort: [{ property: 'lastName', isAscending: true }],
+      }, 'a'],
+      ['Contact/get', {
+        accountId: this.session!.accountId,
+        '#ids': {
+          resultOf: 'a',
+          name: 'Contact/query',
+          path: '/ids',
+        },
+        properties: ['id', 'firstName', 'lastName', 'emails', 'phones', 'addresses', 'company', 'jobTitle', 'notes', 'addressBookId'],
+      }, 'b']
+    ]);
+
+    return {
+      queryResult: response.methodResponses[0][1],
+      contactsResult: response.methodResponses[1][1]
+    };
+  }
+
+  async createContact(contactData: {
+    addressBookId: string;
+    firstName?: string;
+    lastName?: string;
+    emails?: { type: string; value: string }[];
+    phones?: { type: string; value: string }[];
+    addresses?: { type: string; street?: string; city?: string; state?: string; country?: string; postalCode?: string }[];
+    company?: string;
+    jobTitle?: string;
+    notes?: string;
+  }): Promise<any> {
+    const contact = {
+      addressBookId: contactData.addressBookId,
+      firstName: contactData.firstName || '',
+      lastName: contactData.lastName || '',
+      emails: contactData.emails || [],
+      phones: contactData.phones || [],
+      addresses: contactData.addresses || [],
+      company: contactData.company || '',
+      jobTitle: contactData.jobTitle || '',
+      notes: contactData.notes || '',
+    };
+
+    const response = await this.jmapRequest([
+      ['Contact/set', {
+        accountId: this.session!.accountId,
+        create: {
+          tempId: contact,
+        },
+      }, 'a']
+    ]);
+
+    return response.methodResponses[0][1];
+  }
+
+  async updateContact(contactId: string, updates: {
+    firstName?: string;
+    lastName?: string;
+    emails?: { type: string; value: string }[];
+    phones?: { type: string; value: string }[];
+    addresses?: { type: string; street?: string; city?: string; state?: string; country?: string; postalCode?: string }[];
+    company?: string;
+    jobTitle?: string;
+    notes?: string;
+  }): Promise<any> {
+    const updateData: any = {};
+    Object.keys(updates).forEach(key => {
+      if ((updates as any)[key] !== undefined) {
+        updateData[key] = (updates as any)[key];
+      }
+    });
+
+    const response = await this.jmapRequest([
+      ['Contact/set', {
+        accountId: this.session!.accountId,
+        update: {
+          [contactId]: updateData,
+        },
+      }, 'a']
+    ]);
+
+    return response.methodResponses[0][1];
+  }
+
+  async deleteContact(contactId: string): Promise<any> {
+    const response = await this.jmapRequest([
+      ['Contact/set', {
+        accountId: this.session!.accountId,
+        destroy: [contactId],
+      }, 'a']
+    ]);
+
+    return response.methodResponses[0][1];
+  }
 }
 
 class JmapMCPServer {
@@ -722,7 +990,7 @@ class JmapMCPServer {
   constructor() {
     this.server = new Server(
       {
-        name: 'jmap-mail-server',
+        name: 'jmap-server',
         version: '0.1.0',
         capabilities: {
           tools: {},
@@ -985,6 +1253,334 @@ class JmapMCPServer {
               required: ['emailIds'],
             },
           },
+          // Calendar tools
+          {
+            name: 'get_calendars',
+            description: 'Get all calendars from the server',
+            inputSchema: {
+              type: 'object',
+              properties: {},
+            },
+          },
+          {
+            name: 'get_calendar_events',
+            description: 'Get calendar events from a specific calendar or all calendars',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                calendarId: {
+                  type: 'string',
+                  description: 'Calendar ID to get events from. If not specified, gets events from all calendars.',
+                },
+                limit: {
+                  type: 'number',
+                  description: 'Maximum number of events to retrieve (default: 50)',
+                },
+              },
+            },
+          },
+          {
+            name: 'create_calendar_event',
+            description: 'Create a new calendar event',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                calendarId: {
+                  type: 'string',
+                  description: 'Calendar ID to create the event in',
+                },
+                title: {
+                  type: 'string',
+                  description: 'Event title',
+                },
+                description: {
+                  type: 'string',
+                  description: 'Event description',
+                },
+                start: {
+                  type: 'string',
+                  description: 'Event start time in ISO 8601 format (e.g., "2024-01-15T10:00:00Z")',
+                },
+                end: {
+                  type: 'string',
+                  description: 'Event end time in ISO 8601 format (e.g., "2024-01-15T11:00:00Z")',
+                },
+                location: {
+                  type: 'string',
+                  description: 'Event location',
+                },
+                participants: {
+                  type: 'array',
+                  items: { type: 'string' },
+                  description: 'Email addresses of event participants',
+                },
+                showWithoutTime: {
+                  type: 'boolean',
+                  description: 'Whether this is an all-day event (default: false)',
+                },
+              },
+              required: ['calendarId', 'title', 'start', 'end'],
+            },
+          },
+          {
+            name: 'update_calendar_event',
+            description: 'Update an existing calendar event',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                eventId: {
+                  type: 'string',
+                  description: 'Event ID to update',
+                },
+                title: {
+                  type: 'string',
+                  description: 'New event title',
+                },
+                description: {
+                  type: 'string',
+                  description: 'New event description',
+                },
+                start: {
+                  type: 'string',
+                  description: 'New event start time in ISO 8601 format',
+                },
+                end: {
+                  type: 'string',
+                  description: 'New event end time in ISO 8601 format',
+                },
+                location: {
+                  type: 'string',
+                  description: 'New event location',
+                },
+                participants: {
+                  type: 'array',
+                  items: { type: 'string' },
+                  description: 'New email addresses of event participants',
+                },
+              },
+              required: ['eventId'],
+            },
+          },
+          {
+            name: 'delete_calendar_event',
+            description: 'Delete a calendar event',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                eventId: {
+                  type: 'string',
+                  description: 'Event ID to delete',
+                },
+              },
+              required: ['eventId'],
+            },
+          },
+          // Contact tools
+          {
+            name: 'get_address_books',
+            description: 'Get all address books from the server',
+            inputSchema: {
+              type: 'object',
+              properties: {},
+            },
+          },
+          {
+            name: 'get_contacts',
+            description: 'Get contacts from a specific address book or all address books',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                addressBookId: {
+                  type: 'string',
+                  description: 'Address book ID to get contacts from. If not specified, gets contacts from all address books.',
+                },
+                limit: {
+                  type: 'number',
+                  description: 'Maximum number of contacts to retrieve (default: 50)',
+                },
+              },
+            },
+          },
+          {
+            name: 'search_contacts',
+            description: 'Search contacts by text query',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                query: {
+                  type: 'string',
+                  description: 'Search query to find contacts',
+                },
+                limit: {
+                  type: 'number',
+                  description: 'Maximum number of results (default: 20)',
+                },
+              },
+              required: ['query'],
+            },
+          },
+          {
+            name: 'create_contact',
+            description: 'Create a new contact',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                addressBookId: {
+                  type: 'string',
+                  description: 'Address book ID to create the contact in',
+                },
+                firstName: {
+                  type: 'string',
+                  description: 'Contact first name',
+                },
+                lastName: {
+                  type: 'string',
+                  description: 'Contact last name',
+                },
+                emails: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      type: { type: 'string', description: 'Email type (e.g., "work", "home", "personal")' },
+                      value: { type: 'string', description: 'Email address' },
+                    },
+                    required: ['type', 'value'],
+                  },
+                  description: 'Contact email addresses',
+                },
+                phones: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      type: { type: 'string', description: 'Phone type (e.g., "work", "home", "mobile")' },
+                      value: { type: 'string', description: 'Phone number' },
+                    },
+                    required: ['type', 'value'],
+                  },
+                  description: 'Contact phone numbers',
+                },
+                addresses: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      type: { type: 'string', description: 'Address type (e.g., "work", "home")' },
+                      street: { type: 'string', description: 'Street address' },
+                      city: { type: 'string', description: 'City' },
+                      state: { type: 'string', description: 'State/Province' },
+                      country: { type: 'string', description: 'Country' },
+                      postalCode: { type: 'string', description: 'Postal/ZIP code' },
+                    },
+                    required: ['type'],
+                  },
+                  description: 'Contact addresses',
+                },
+                company: {
+                  type: 'string',
+                  description: 'Contact company/organization',
+                },
+                jobTitle: {
+                  type: 'string',
+                  description: 'Contact job title',
+                },
+                notes: {
+                  type: 'string',
+                  description: 'Contact notes',
+                },
+              },
+              required: ['addressBookId'],
+            },
+          },
+          {
+            name: 'update_contact',
+            description: 'Update an existing contact',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                contactId: {
+                  type: 'string',
+                  description: 'Contact ID to update',
+                },
+                firstName: {
+                  type: 'string',
+                  description: 'New contact first name',
+                },
+                lastName: {
+                  type: 'string',
+                  description: 'New contact last name',
+                },
+                emails: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      type: { type: 'string', description: 'Email type (e.g., "work", "home", "personal")' },
+                      value: { type: 'string', description: 'Email address' },
+                    },
+                    required: ['type', 'value'],
+                  },
+                  description: 'New contact email addresses',
+                },
+                phones: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      type: { type: 'string', description: 'Phone type (e.g., "work", "home", "mobile")' },
+                      value: { type: 'string', description: 'Phone number' },
+                    },
+                    required: ['type', 'value'],
+                  },
+                  description: 'New contact phone numbers',
+                },
+                addresses: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      type: { type: 'string', description: 'Address type (e.g., "work", "home")' },
+                      street: { type: 'string', description: 'Street address' },
+                      city: { type: 'string', description: 'City' },
+                      state: { type: 'string', description: 'State/Province' },
+                      country: { type: 'string', description: 'Country' },
+                      postalCode: { type: 'string', description: 'Postal/ZIP code' },
+                    },
+                    required: ['type'],
+                  },
+                  description: 'New contact addresses',
+                },
+                company: {
+                  type: 'string',
+                  description: 'New contact company/organization',
+                },
+                jobTitle: {
+                  type: 'string',
+                  description: 'New contact job title',
+                },
+                notes: {
+                  type: 'string',
+                  description: 'New contact notes',
+                },
+              },
+              required: ['contactId'],
+            },
+          },
+          {
+            name: 'delete_contact',
+            description: 'Delete a contact',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                contactId: {
+                  type: 'string',
+                  description: 'Contact ID to delete',
+                },
+              },
+              required: ['contactId'],
+            },
+          },
         ],
       };
     });
@@ -1018,6 +1614,41 @@ class JmapMCPServer {
           
           case 'delete_emails':
             return await this.handleDeleteEmails(request.params.arguments);
+          
+          // Calendar handlers
+          case 'get_calendars':
+            return await this.handleGetCalendars();
+          
+          case 'get_calendar_events':
+            return await this.handleGetCalendarEvents(request.params.arguments);
+          
+          case 'create_calendar_event':
+            return await this.handleCreateCalendarEvent(request.params.arguments);
+          
+          case 'update_calendar_event':
+            return await this.handleUpdateCalendarEvent(request.params.arguments);
+          
+          case 'delete_calendar_event':
+            return await this.handleDeleteCalendarEvent(request.params.arguments);
+          
+          // Contact handlers
+          case 'get_address_books':
+            return await this.handleGetAddressBooks();
+          
+          case 'get_contacts':
+            return await this.handleGetContacts(request.params.arguments);
+          
+          case 'search_contacts':
+            return await this.handleSearchContacts(request.params.arguments);
+          
+          case 'create_contact':
+            return await this.handleCreateContact(request.params.arguments);
+          
+          case 'update_contact':
+            return await this.handleUpdateContact(request.params.arguments);
+          
+          case 'delete_contact':
+            return await this.handleDeleteContact(request.params.arguments);
           
           default:
             throw new McpError(
@@ -1266,6 +1897,301 @@ class JmapMCPServer {
         {
           type: 'text',
           text: `Deleted ${emailIds.length} emails: ${JSON.stringify(result, null, 2)}`,
+        },
+      ],
+    };
+  }
+
+  // Calendar handlers
+  private async handleGetCalendars() {
+    await this.ensureInitialized();
+    
+    if (!this.client || !this.isInitialized) {
+      return {
+        content: [
+          {
+            type: 'text',
+            text: 'Not connected to Jmap Mail server. Please use the connect_jmap tool first with your server details.',
+          },
+        ],
+      };
+    }
+
+    const calendars = await this.client.getCalendars();
+    
+    return {
+      content: [
+        {
+          type: 'text',
+          text: JSON.stringify(calendars, null, 2),
+        },
+      ],
+    };
+  }
+
+  private async handleGetCalendarEvents(args: any) {
+    await this.ensureInitialized();
+    
+    if (!this.client || !this.isInitialized) {
+      return {
+        content: [
+          {
+            type: 'text',
+            text: 'Not connected to Jmap Mail server. Please use the connect_jmap tool first with your server details.',
+          },
+        ],
+      };
+    }
+
+    const { calendarId, limit = 50 } = args || {};
+    const result = await this.client.getCalendarEvents(calendarId, limit);
+    
+    return {
+      content: [
+        {
+          type: 'text',
+          text: JSON.stringify(result, null, 2),
+        },
+      ],
+    };
+  }
+
+  private async handleCreateCalendarEvent(args: any) {
+    await this.ensureInitialized();
+    
+    if (!this.client || !this.isInitialized) {
+      return {
+        content: [
+          {
+            type: 'text',
+            text: 'Not connected to Jmap Mail server. Please use the connect_jmap tool first with your server details.',
+          },
+        ],
+      };
+    }
+
+    const result = await this.client.createCalendarEvent(args);
+    
+    return {
+      content: [
+        {
+          type: 'text',
+          text: `Calendar event created successfully: ${JSON.stringify(result, null, 2)}`,
+        },
+      ],
+    };
+  }
+
+  private async handleUpdateCalendarEvent(args: any) {
+    await this.ensureInitialized();
+    
+    if (!this.client || !this.isInitialized) {
+      return {
+        content: [
+          {
+            type: 'text',
+            text: 'Not connected to Jmap Mail server. Please use the connect_jmap tool first with your server details.',
+          },
+        ],
+      };
+    }
+
+    const { eventId, ...updates } = args;
+    const result = await this.client.updateCalendarEvent(eventId, updates);
+    
+    return {
+      content: [
+        {
+          type: 'text',
+          text: `Calendar event updated successfully: ${JSON.stringify(result, null, 2)}`,
+        },
+      ],
+    };
+  }
+
+  private async handleDeleteCalendarEvent(args: any) {
+    await this.ensureInitialized();
+    
+    if (!this.client || !this.isInitialized) {
+      return {
+        content: [
+          {
+            type: 'text',
+            text: 'Not connected to Jmap Mail server. Please use the connect_jmap tool first with your server details.',
+          },
+        ],
+      };
+    }
+
+    const { eventId } = args;
+    const result = await this.client.deleteCalendarEvent(eventId);
+    
+    return {
+      content: [
+        {
+          type: 'text',
+          text: `Calendar event deleted successfully: ${JSON.stringify(result, null, 2)}`,
+        },
+      ],
+    };
+  }
+
+  // Contact handlers
+  private async handleGetAddressBooks() {
+    await this.ensureInitialized();
+    
+    if (!this.client || !this.isInitialized) {
+      return {
+        content: [
+          {
+            type: 'text',
+            text: 'Not connected to Jmap Mail server. Please use the connect_jmap tool first with your server details.',
+          },
+        ],
+      };
+    }
+
+    const addressBooks = await this.client.getAddressBooks();
+    
+    return {
+      content: [
+        {
+          type: 'text',
+          text: JSON.stringify(addressBooks, null, 2),
+        },
+      ],
+    };
+  }
+
+  private async handleGetContacts(args: any) {
+    await this.ensureInitialized();
+    
+    if (!this.client || !this.isInitialized) {
+      return {
+        content: [
+          {
+            type: 'text',
+            text: 'Not connected to Jmap Mail server. Please use the connect_jmap tool first with your server details.',
+          },
+        ],
+      };
+    }
+
+    const { addressBookId, limit = 50 } = args || {};
+    const result = await this.client.getContacts(addressBookId, limit);
+    
+    return {
+      content: [
+        {
+          type: 'text',
+          text: JSON.stringify(result, null, 2),
+        },
+      ],
+    };
+  }
+
+  private async handleSearchContacts(args: any) {
+    await this.ensureInitialized();
+    
+    if (!this.client || !this.isInitialized) {
+      return {
+        content: [
+          {
+            type: 'text',
+            text: 'Not connected to Jmap Mail server. Please use the connect_jmap tool first with your server details.',
+          },
+        ],
+      };
+    }
+
+    const { query, limit = 20 } = args;
+    const result = await this.client.searchContacts(query, limit);
+    
+    return {
+      content: [
+        {
+          type: 'text',
+          text: JSON.stringify(result, null, 2),
+        },
+      ],
+    };
+  }
+
+  private async handleCreateContact(args: any) {
+    await this.ensureInitialized();
+    
+    if (!this.client || !this.isInitialized) {
+      return {
+        content: [
+          {
+            type: 'text',
+            text: 'Not connected to Jmap Mail server. Please use the connect_jmap tool first with your server details.',
+          },
+        ],
+      };
+    }
+
+    const result = await this.client.createContact(args);
+    
+    return {
+      content: [
+        {
+          type: 'text',
+          text: `Contact created successfully: ${JSON.stringify(result, null, 2)}`,
+        },
+      ],
+    };
+  }
+
+  private async handleUpdateContact(args: any) {
+    await this.ensureInitialized();
+    
+    if (!this.client || !this.isInitialized) {
+      return {
+        content: [
+          {
+            type: 'text',
+            text: 'Not connected to Jmap Mail server. Please use the connect_jmap tool first with your server details.',
+          },
+        ],
+      };
+    }
+
+    const { contactId, ...updates } = args;
+    const result = await this.client.updateContact(contactId, updates);
+    
+    return {
+      content: [
+        {
+          type: 'text',
+          text: `Contact updated successfully: ${JSON.stringify(result, null, 2)}`,
+        },
+      ],
+    };
+  }
+
+  private async handleDeleteContact(args: any) {
+    await this.ensureInitialized();
+    
+    if (!this.client || !this.isInitialized) {
+      return {
+        content: [
+          {
+            type: 'text',
+            text: 'Not connected to Jmap Mail server. Please use the connect_jmap tool first with your server details.',
+          },
+        ],
+      };
+    }
+
+    const { contactId } = args;
+    const result = await this.client.deleteContact(contactId);
+    
+    return {
+      content: [
+        {
+          type: 'text',
+          text: `Contact deleted successfully: ${JSON.stringify(result, null, 2)}`,
         },
       ],
     };

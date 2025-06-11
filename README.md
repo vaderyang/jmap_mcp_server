@@ -1,6 +1,6 @@
-# JMAP MCP - Jmap Mail Server Integration
+# JMAP MCP - Jmap Server Integration
 
-A Model Context Protocol (MCP) server for interacting with Jmap Mail Server via JMAP protocol.
+A Model Context Protocol (MCP) server for interacting with Jmap Server via JMAP protocol, supporting email, calendar, and contacts.
 
 ## Demo
 
@@ -46,13 +46,30 @@ Example config file:
 ## Features
 
 - Auto-connects on startup if configuration is provided
-- Supports all JMAP email operations:
-  - Get mailboxes
-  - Get emails
-  - Search emails
-  - Send emails
-  - Mark as read/unread
-  - Delete emails
+- Supports comprehensive JMAP operations:
+
+### Email Operations
+- Get mailboxes
+- Get emails
+- Search emails
+- Send emails
+- Mark as read/unread
+- Delete emails
+
+### Calendar Operations
+- Get calendars
+- Get calendar events
+- Create calendar events
+- Update calendar events
+- Delete calendar events
+
+### Contact Operations
+- Get address books
+- Get contacts
+- Search contacts
+- Create contacts
+- Update contacts
+- Delete contacts
 
 ## Usage
 
@@ -245,21 +262,132 @@ Delete emails (moves to trash).
 **Parameters:**
 - `emailIds`: Array of email IDs
 
+### Calendar Tools
+
+#### `get_calendars`
+Retrieve all calendars from the server.
+
+#### `get_calendar_events`
+Get calendar events from a specific calendar or all calendars.
+
+**Parameters:**
+- `calendarId` (optional): Specific calendar ID
+- `limit` (optional): Maximum number of events (default: 50)
+
+#### `create_calendar_event`
+Create a new calendar event.
+
+**Parameters:**
+- `calendarId`: Calendar ID to create the event in
+- `title`: Event title
+- `description` (optional): Event description
+- `start`: Event start time in ISO 8601 format (e.g., "2024-01-15T10:00:00Z")
+- `end`: Event end time in ISO 8601 format (e.g., "2024-01-15T11:00:00Z")
+- `location` (optional): Event location
+- `participants` (optional): Array of participant email addresses
+- `showWithoutTime` (optional): Whether this is an all-day event (default: false)
+
+#### `update_calendar_event`
+Update an existing calendar event.
+
+**Parameters:**
+- `eventId`: Event ID to update
+- `title` (optional): New event title
+- `description` (optional): New event description
+- `start` (optional): New event start time in ISO 8601 format
+- `end` (optional): New event end time in ISO 8601 format
+- `location` (optional): New event location
+- `participants` (optional): New array of participant email addresses
+
+#### `delete_calendar_event`
+Delete a calendar event.
+
+**Parameters:**
+- `eventId`: Event ID to delete
+
+### Contact Tools
+
+#### `get_address_books`
+Retrieve all address books from the server.
+
+#### `get_contacts`
+Get contacts from a specific address book or all address books.
+
+**Parameters:**
+- `addressBookId` (optional): Specific address book ID
+- `limit` (optional): Maximum number of contacts (default: 50)
+
+#### `search_contacts`
+Search contacts by text query.
+
+**Parameters:**
+- `query`: Search query to find contacts
+- `limit` (optional): Maximum number of results (default: 20)
+
+#### `create_contact`
+Create a new contact.
+
+**Parameters:**
+- `addressBookId`: Address book ID to create the contact in
+- `firstName` (optional): Contact first name
+- `lastName` (optional): Contact last name
+- `emails` (optional): Array of email objects with `type` and `value`
+- `phones` (optional): Array of phone objects with `type` and `value`
+- `addresses` (optional): Array of address objects with `type`, `street`, `city`, `state`, `country`, `postalCode`
+- `company` (optional): Contact company/organization
+- `jobTitle` (optional): Contact job title
+- `notes` (optional): Contact notes
+
+#### `update_contact`
+Update an existing contact.
+
+**Parameters:**
+- `contactId`: Contact ID to update
+- `firstName` (optional): New contact first name
+- `lastName` (optional): New contact last name
+- `emails` (optional): New array of email objects with `type` and `value`
+- `phones` (optional): New array of phone objects with `type` and `value`
+- `addresses` (optional): New array of address objects with `type`, `street`, `city`, `state`, `country`, `postalCode`
+- `company` (optional): New contact company/organization
+- `jobTitle` (optional): New contact job title
+- `notes` (optional): New contact notes
+
+#### `delete_contact`
+Delete a contact.
+
+**Parameters:**
+- `contactId`: Contact ID to delete
+
 ## Example Usage
 
 Once connected to Claude with this MCP server, you can use natural language commands like:
 
+**Emails:**
 - "Show me my recent emails"
 - "Search for emails about 'project update'"
 - "Send an email to alice@example.com about the meeting"
-|- "Mark all unread emails as read"
+- "Mark all unread emails as read"
+
+**Calendar:**
+- "Show me my calendars"
+- "Get my calendar events for this week"
+- "Create a meeting for tomorrow at 2 PM"
+- "Update the project review meeting location"
+
+**Contacts:**
+- "Show me all my contacts"
+- "Search for contacts named John"
+- "Create a new contact for Jane Smith"
+- "Update Alice's phone number"
 
 ## JMAP Protocol
 
-This server implements the JMAP protocol for modern email operations:
+This server implements the JMAP protocol for modern email, calendar, and contact operations:
 
 - **JMAP Core** (`urn:ietf:params:jmap:core`)
 - **JMAP Mail** (`urn:ietf:params:jmap:mail`)
+- **JMAP Calendars** (`urn:ietf:params:jmap:calendars`)
+- **JMAP Contacts** (`urn:ietf:params:jmap:contacts`)
 
 ## Jmap Configuration
 

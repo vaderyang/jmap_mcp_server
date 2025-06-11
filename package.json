@@ -1,7 +1,7 @@
 {
-  "name": "jmap-mail-mcp-server",
-  "version": "0.1.0",
-  "description": "MCP server for Jmap Mail via JMAP",
+  "name": "jmap-mcp-server",
+  "version": "0.2.0",
+  "description": "MCP server for Jmap Server via JMAP, supporting email, calendar, and contacts",
   "main": "dist/index.js",
   "type": "module",
   "scripts": {
@@ -19,8 +19,11 @@
     "mcp",
     "jmap",
     "mail",
-    "jmap",
-    "email"
+    "email",
+    "calendar",
+    "contacts",
+    "caldav",
+    "carddav"
   ],
   "author": "Your Name",
   "license": "MIT",
